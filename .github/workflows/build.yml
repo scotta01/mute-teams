@@ -1,17 +1,31 @@
 name: "FAP: Build for multiple SDK sources"
-# This will build your app for dev and release channels on GitHub. 
-# It will also build your app every day to make sure it's up to date with the latest SDK changes.
-# See https://github.com/marketplace/actions/build-flipper-application-package-fap for more information
+# Builds the app against the dev and release SDK channels on every push and PR,
+# and daily to catch SDK drift.
+# See https://github.com/marketplace/actions/build-flipper-application-package-fap
+#
+# Security hardening (public repo):
+#  - Uses `pull_request` (NOT `pull_request_target`): fork PRs run with a
+#    read-only token and no access to secrets, and cannot run privileged code.
+#  - Least-privilege GITHUB_TOKEN: read-only, set at workflow level so it
+#    applies even if the repo default is read/write.
+#  - Third-party and first-party actions are pinned to a full commit SHA so a
+#    moved tag cannot inject code into CI. Version is noted in the trailing
+#    comment for Dependabot/Renovate.
 
 on:
   push:
-    ## put your main branch name under "branches"
-    #branches: 
-    #  - master 
+    ## Restrict to your main branch(es) if you want fewer runs, e.g.:
+    #branches:
+    #  - main
   pull_request:
-  schedule: 
+  schedule:
     # do a build every day
     - cron: "1 1 * * *"
+
+# Least privilege: this build job only needs to read the repo. No job here
+# writes to the repo, posts comments, or needs other scopes.
+permissions:
+  contents: read
 
 jobs:
   ufbt-build:
@@ -27,14 +41,17 @@ jobs:
     name: 'ufbt: Build for ${{ matrix.name }}'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          # Build job does not push; don't leave the token in .git/config.
+          persist-credentials: false
       - name: Build with ufbt
-        uses: flipperdevices/flipperzero-ufbt-action@v0.1
+        uses: flipperdevices/flipperzero-ufbt-action@e7cd34914e61ddc056acd8daaab96d8b4d4d9f55 # v0.1.4
         id: build-app
         with:
           sdk-channel: ${{ matrix.sdk-channel }}
       - name: Upload app artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           # See ufbt action docs for other output variables
           name: ${{ github.event.repository.name }}-${{ steps.build-app.outputs.suffix }}
