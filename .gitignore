@@ -1,0 +1,12 @@
+# ufbt / build output
+dist/
+build/
+.ufbt/
+
+# Editor / generated
+.vscode/
+compile_commands.json
+
+# Python
+__pycache__/
+*.pyc

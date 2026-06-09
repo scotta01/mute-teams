@@ -1,0 +1,15 @@
+App(
+    appid="teams_mute",
+    name="Teams Mute",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="teams_mute_app",
+    stack_size=4 * 1024,
+    fap_category="Bluetooth",
+    fap_version="1.0",
+    fap_description="One-button BLE HID remote that toggles the Windows 11 "
+    "system mic mute (Win+Alt+K) for Teams, plus a Ctrl+Shift+M fallback "
+    "and Ctrl+Space push-to-talk.",
+    fap_author="scotta01",
+    fap_icon="teams_mute.png",  # 10x10 1-bit PNG
+    fap_icon_assets="images",  # Image assets to compile for this application
+)
