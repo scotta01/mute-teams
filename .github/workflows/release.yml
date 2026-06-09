@@ -1,0 +1,43 @@
+name: Release
+# Cuts a GitHub Release with the built .fap whenever a v* tag is pushed,
+# e.g.  git tag v1.0 && git push origin v1.0
+#
+# Security hardening (public repo):
+#  - Trigger is tag-push only; only users with push access can create tags,
+#    so this never runs on untrusted fork code.
+#  - GITHUB_TOKEN is read-only at the workflow level; only the release job is
+#    granted contents: write (to create the release and upload the asset).
+#  - All actions are pinned to a full commit SHA (version in the trailing
+#    comment). The existing .github/dependabot.yml already keeps these fresh.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      # Only this job needs write, and only to publish the Release.
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Build with ufbt (release SDK channel)
+        uses: flipperdevices/flipperzero-ufbt-action@e7cd34914e61ddc056acd8daaab96d8b4d4d9f55 # v0.1.4
+        id: build
+        with:
+          sdk-channel: release
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+        with:
+          # The pushed tag (github.ref_name) is used as the release name by default.
+          files: ${{ steps.build.outputs.fap-artifacts }}
+          fail_on_unmatched_files: true # fail loudly if the build produced no .fap
+          generate_release_notes: true
