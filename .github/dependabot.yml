@@ -1,0 +1,19 @@
+# Keep GitHub Actions pins fresh. Dependabot bumps the commit SHAs (and the
+# trailing "# vX.Y.Z" version comments) on SHA-pinned actions, so pinning in
+# build.yml does not mean the pins silently rot.
+# Docs: https://docs.github.com/code-security/dependabot/dependabot-version-updates
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/" # scans .github/workflows/
+    schedule:
+      interval: "weekly"
+    # One grouped PR for all action bumps instead of one PR per action.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
